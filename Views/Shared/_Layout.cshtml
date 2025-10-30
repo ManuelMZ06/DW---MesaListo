@@ -39,18 +39,36 @@
                     <a class="navbar-brand" asp-controller="Home" asp-action="Index">
                         <i class="fas fa-user-shield me-2"></i>Administrador
                     </a>
-                    <div class="collapse navbar-collapse">
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar" aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="adminNavbar">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <!-- Enlace al nuevo Dashboard de Administración -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Panel de Administración
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">Gestionar Usuarios</a></li>
+                                </ul>
+                            </li>
+
                             <li class="nav-item"><a class="nav-link" asp-controller="Restaurantes" asp-action="Index">Restaurantes</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Mesas" asp-action="Index">Mesas</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Resenas" asp-action="Index">Reseñas</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Reservas" asp-action="Index">Reservas</a></li>
                         </ul>
+
+                        <!-- Partial de Login / Logout -->
                         <partial name="_LoginPartial" />
                     </div>
                 </div>
             </nav>
         }
+
         else if (User.IsInRole("Restaurante"))
         {
             <!-- Navbar para Restaurantes -->
@@ -88,6 +106,31 @@
                 </div>
             </nav>
         }
+        else
+        {
+            <!-- Navbar para usuarios sin rol o visitantes -->
+            <nav class="navbar navbar-expand-sm navbar-dark bg-dark border-bottom shadow-sm mb-3">
+                <div class="container">
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-utensils me-2"></i>MesaListo
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNoRole" aria-controls="navbarNoRole" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNoRole">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
+                            </li>
+                        </ul>
+
+                        <!-- Aquí sigue funcionando tu _LoginPartial -->
+                        <partial name="_LoginPartial" />
+                    </div>
+                </div>
+            </nav>
+        }
+
     </header>
 
     <div class="container">
