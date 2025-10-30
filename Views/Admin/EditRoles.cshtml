@@ -1,0 +1,35 @@
+﻿@model MesaListo.Controllers.EditRolesViewModel
+
+@{
+    ViewData["Title"] = "Editar Roles";
+}
+
+<h2>Editar roles de: @Model.UserEmail</h2>
+
+<form asp-action="EditRoles" method="post">
+    <input type="hidden" asp-for="UserId" />
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Rol</th>
+                <th>Asignado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Roles.Count; i++)
+            {
+                <tr>
+                    <td>@Model.Roles[i].RoleName</td>
+                    <td>
+                        <input asp-for="Roles[i].Selected" type="checkbox" class="form-check-input" />
+                        <input type="hidden" asp-for="Roles[i].RoleName" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-success">Guardar Cambios</button>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</form>

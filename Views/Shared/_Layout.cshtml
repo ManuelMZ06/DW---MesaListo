@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -7,28 +11,126 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="icon" type="image/png" href="~/Favicon.png" asp-append-version="true" />
 </head>
+
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-primary border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="fas fa-utensils me-2"></i>MesaListo
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <!-- Navbar pública -->
+            <nav class="navbar navbar-light bg-white shadow-sm">
+                <div class="container justify-content-between">
+                    <a class="navbar-brand text-primary fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-utensils me-2"></i>MesaListo
+                    </a>
+                    <div>
+                        <a class="btn btn-outline-naranja me-2" asp-area="Identity" asp-page="/Account/Login">Iniciar Sesión</a>
+                        <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Registrarse</a>
+                    </div>
                 </div>
-            </div>
-        </nav>
+            </nav>
+        }
+        else if (User.IsInRole("Admin"))
+        {
+            <!-- Navbar para Administrador -->
+            <nav class="navbar navbar-expand-sm navbar-dark bg-dark border-bottom shadow-sm mb-3">
+                <div class="container">
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-user-shield me-2"></i>Administrador
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar" aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="adminNavbar">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <!-- Enlace al nuevo Dashboard de Administración -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Panel de Administración
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">Gestionar Usuarios</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item"><a class="nav-link" asp-controller="Restaurantes" asp-action="Index">Restaurantes</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Mesas" asp-action="Index">Mesas</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Resenas" asp-action="Index">Reseñas</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Reservas" asp-action="Index">Reservas</a></li>
+                        </ul>
+
+                        <!-- Partial de Login / Logout -->
+                        <partial name="_LoginPartial" />
+                    </div>
+                </div>
+            </nav>
+        }
+
+        else if (User.IsInRole("Restaurante"))
+        {
+            <!-- Navbar para Restaurantes -->
+            <nav class="navbar navbar-expand-sm navbar-dark" style="background-color:#FF6600;">
+                <div class="container">
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-utensils me-2"></i>Mi Restaurante
+                    </a>
+                    <div class="collapse navbar-collapse">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item"><a class="nav-link" asp-controller="Mesas" asp-action="Index">Mesas</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Reservas" asp-action="Index">Reservas</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Resenas" asp-action="Index">Reseñas</a></li>
+                        </ul>
+                        <partial name="_LoginPartial" />
+                    </div>
+                </div>
+            </nav>
+        }
+        else if (User.IsInRole("Cliente"))
+        {
+            <!-- Navbar para Clientes -->
+            <nav class="navbar navbar-expand-sm navbar-dark bg-primary border-bottom shadow-sm mb-3">
+                <div class="container">
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-user me-2"></i>Cliente
+                    </a>
+                    <div class="collapse navbar-collapse">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item"><a class="nav-link" asp-controller="Reservas" asp-action="Index">Mis Reservas</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Resenas" asp-action="Index">Reseñas</a></li>
+                        </ul>
+                        <partial name="_LoginPartial" />
+                    </div>
+                </div>
+            </nav>
+        }
+        else
+        {
+            <!-- Navbar para usuarios sin rol o visitantes -->
+            <nav class="navbar navbar-expand-sm navbar-dark bg-dark border-bottom shadow-sm mb-3">
+                <div class="container">
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-utensils me-2"></i>MesaListo
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNoRole" aria-controls="navbarNoRole" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNoRole">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
+                            </li>
+                        </ul>
+
+                        <!-- Aquí sigue funcionando tu _LoginPartial -->
+                        <partial name="_LoginPartial" />
+                    </div>
+                </div>
+            </nav>
+        }
+
     </header>
 
     <div class="container">
@@ -39,12 +141,11 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2024 - MesaListo - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - MesaListo
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,38 @@
+﻿@inject SignInManager<IdentityUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+
+<ul class="nav flex-column shadow-sm p-3 rounded" style="background-color: #fff;">
+    <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)"
+           asp-page="./Index"
+           style="color: #FF6600; font-weight: 500;">
+            <i class="fa-solid fa-user me-2"></i> Perfil
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)"
+           asp-page="./Email"
+           style="color: #FF6600; font-weight: 500;">
+            <i class="fa-solid fa-envelope me-2"></i> Correo
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)"
+           asp-page="./ChangePassword"
+           style="color: #FF6600; font-weight: 500;">
+            <i class="fa-solid fa-lock me-2"></i> Contraseña
+        </a>
+    </li>
+    @if (hasExternalLogins)
+    {
+        <li class="nav-item mb-2">
+            <a class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)"
+               asp-page="./ExternalLogins"
+               style="color: #FF6600; font-weight: 500;">
+                <i class="fa-brands fa-google me-2"></i> Inicios de sesión externos
+            </a>
+        </li>
+    }
+</ul>
