@@ -1,49 +1,64 @@
 ﻿@model MesaListo.Models.Reserva
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Reserva";
 }
 
-<h1>Edit</h1>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Editar Reserva #@Model.Id</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ClienteId" />
 
-<h4>Reserva</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="FechaHora" class="control-label"></label>
-                <input asp-for="FechaHora" class="form-control" />
-                <span asp-validation-for="FechaHora" class="text-danger"></span>
+                        <div class="form-group mb-4">
+                            <label asp-for="FechaHora" class="form-label fw-bold">Fecha y Hora</label>
+                            <input asp-for="FechaHora" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="FechaHora" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label asp-for="MesaId" class="form-label fw-bold">Mesa</label>
+                            <select asp-for="MesaId" class="form-control" asp-items="ViewBag.MesaId"></select>
+                            <span asp-validation-for="MesaId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label asp-for="Estado" class="form-label fw-bold">Estado</label>
+                            <select asp-for="Estado" class="form-control" asp-items="ViewBag.Estados"></select>
+                            <span asp-validation-for="Estado" class="text-danger small"></span>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-body bg-light">
+                                <h6 class="card-title"><i class="fas fa-user me-2"></i>Información del Cliente</h6>
+                                <p class="mb-0">@Model.Cliente?.Email</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Listado
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save me-2"></i>Actualizar Reserva
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="MesaId" class="control-label"></label>
-                <select asp-for="MesaId" class="form-control" asp-items="ViewBag.MesaId"></select>
-                <span asp-validation-for="MesaId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ClienteId" class="control-label"></label>
-                <select asp-for="ClienteId" class="form-control" asp-items="ViewBag.ClienteId"></select>
-                <span asp-validation-for="ClienteId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Estado" class="control-label"></label>
-                <input asp-for="Estado" class="form-control" />
-                <span asp-validation-for="Estado" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

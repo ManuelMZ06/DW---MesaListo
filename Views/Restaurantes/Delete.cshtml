@@ -1,45 +1,82 @@
 ﻿@model MesaListo.Models.Restaurante
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Eliminar Restaurante";
 }
 
-<h1>Delete</h1>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">¡Atención!</h5>
+                        <p class="mb-0">
+                            <strong>Esta acción eliminará permanentemente el restaurante y todas sus mesas asociadas.</strong>
+                            Las reservas relacionadas también se perderán.
+                        </p>
+                    </div>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Restaurante</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Nombre)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Nombre)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Direccion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Direccion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Telefono)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Telefono)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UsuarioId)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UsuarioId)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title text-danger">
+                                <i class="fas fa-utensils me-2"></i>@Model.Nombre
+                            </h5>
+                            <dl class="row">
+                                <dt class="col-sm-3">Dirección:</dt>
+                                <dd class="col-sm-9">@Html.DisplayFor(model => model.Direccion)</dd>
+
+                                <dt class="col-sm-3">Teléfono:</dt>
+                                <dd class="col-sm-9">@Html.DisplayFor(model => model.Telefono)</dd>
+
+                                <dt class="col-sm-3">Mesas:</dt>
+                                <dd class="col-sm-9">
+                                    <span class="badge bg-warning">@Model.Mesas?.Count mesas registradas</span>
+                                </dd>
+
+                                @if (Model.Mesas?.Any() == true)
+                                {
+                                    <dt class="col-sm-3">Detalle Mesas:</dt>
+                                    <dd class="col-sm-9">
+                                        @foreach (var mesa in Model.Mesas.Take(5))
+                                        {
+                                            <span class="badge bg-secondary me-1">@mesa.Codigo (Cap. @mesa.Capacidad)</span>
+                                        }
+                                        @if (Model.Mesas.Count > 5)
+                                        {
+                                            <span class="text-muted">+ @(Model.Mesas.Count - 5) más...</span>
+                                        }
+                                    </dd>
+                                }
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading"><i class="fas fa-warning me-2"></i>Impacto de esta acción:</h6>
+                        <ul class="mb-0">
+                            <li>@Model.Mesas?.Count mesas serán eliminadas</li>
+                            <li>Todas las reservas futuras serán canceladas</li>
+                            <li>Esta acción no se puede deshacer</li>
+                        </ul>
+                    </div>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancelar y Volver
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Eliminar Definitivamente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

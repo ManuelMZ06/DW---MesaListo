@@ -1,46 +1,58 @@
 ﻿@model MesaListo.Models.Reserva
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Nueva Reserva";
 }
 
-<h1>Create</h1>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Nueva Reserva</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="All" class="alert alert-danger"></div>
 
-<h4>Reserva</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="All" class="text-danger"></div> <!-- Cambiar a "All" -->
+                        <div class="form-group mb-4">
+                            <label asp-for="FechaHora" class="form-label fw-bold">Fecha y Hora</label>
+                            <input asp-for="FechaHora" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="FechaHora" class="text-danger small"></span>
+                            <div class="form-text">Seleccione la fecha y hora para su reserva</div>
+                        </div>
 
-            <div class="form-group">
-                <label asp-for="FechaHora" class="control-label"></label>
-                <input asp-for="FechaHora" class="form-control" type="datetime-local" />
-                <span asp-validation-for="FechaHora" class="text-danger"></span>
+                        <div class="form-group mb-4">
+                            <label asp-for="MesaId" class="form-label fw-bold">Mesa</label>
+                            <select asp-for="MesaId" class="form-control" asp-items="ViewBag.MesaId">
+                                <option value="">-- Seleccionar Mesa --</option>
+                            </select>
+                            <span asp-validation-for="MesaId" class="text-danger small"></span>
+                            <div class="form-text">Elija una mesa disponible en el restaurante</div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Información Importante</h6>
+                            <ul class="mb-0">
+                                <li>La reserva quedará en estado "Pendiente" hasta confirmación</li>
+                                <li>Recibirá una notificación cuando sea confirmada</li>
+                                <li>Puede cancelar su reserva hasta 2 horas antes</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver a Mis Reservas
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-calendar-check me-2"></i>Confirmar Reserva
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="MesaId" class="control-label"></label>
-                <select asp-for="MesaId" class="form-control" asp-items="ViewBag.MesaId">
-                    <option value="">-- Seleccionar Mesa --</option>
-                </select>
-                <span asp-validation-for="MesaId" class="text-danger"></span>
-            </div>
-            <!-- QUITAR el campo ClienteId - se asigna automáticamente -->
-            <div class="form-group" style="display: none;">
-                <!-- Ocultar Estado -->
-                <label asp-for="Estado" class="control-label"></label>
-                <input asp-for="Estado" class="form-control" value="Pendiente" />
-                <span asp-validation-for="Estado" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

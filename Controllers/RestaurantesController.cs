@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MesaListo.Data;
 using MesaListo.Models;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization; // Agregar este using
 
 namespace MesaListo.Controllers
 {
-    [Authorize] // AGREGAR esto - requiere autenticación
+    [Authorize]
     public class RestaurantesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,14 +23,25 @@ namespace MesaListo.Controllers
         }
 
         // GET: Restaurantes
-        [AllowAnonymous] // Permitir acceso sin login
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Restaurantes.ToListAsync());
+            var query = _context.Restaurantes.AsQueryable();
+
+            // SOLO Restaurantes ven SUS restaurantes
+            // Admin ve TODOS los restaurantes (sin filtro)
+            if (User.IsInRole("Restaurante"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                query = query.Where(r => r.UsuarioId == userId);
+            }
+            // Admin y usuarios no autenticados ven TODOS los restaurantes
+
+            return View(await query.ToListAsync());
         }
 
         // GET: Restaurantes/Details/5
-        [AllowAnonymous] // Permitir acceso sin login
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -39,7 +50,9 @@ namespace MesaListo.Controllers
             }
 
             var restaurante = await _context.Restaurantes
+                .Include(r => r.Mesas)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (restaurante == null)
             {
                 return NotFound();
@@ -49,7 +62,7 @@ namespace MesaListo.Controllers
         }
 
         // GET: Restaurantes/Create
-        [Authorize(Roles = "Admin,Restaurante")] // Solo estos roles pueden crear
+        [Authorize(Roles = "Admin,Restaurante")] // Admin Y Restaurante pueden crear
         public IActionResult Create()
         {
             return View();
@@ -58,23 +71,13 @@ namespace MesaListo.Controllers
         // POST: Restaurantes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Restaurante")] // Solo estos roles pueden crear
+        [Authorize(Roles = "Admin,Restaurante")] // Admin Y Restaurante pueden crear
         public async Task<IActionResult> Create([Bind("Id,Nombre,Direccion,Telefono")] Restaurante restaurante)
         {
             if (ModelState.IsValid)
             {
-                // VERIFICAR que el usuario está autenticado
-                if (User.Identity.IsAuthenticated)
-                {
-                    restaurante.UsuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    Console.WriteLine($"UsuarioId asignado: {restaurante.UsuarioId}");
-                }
-                else
-                {
-                    // Si no está autenticado, redirigir al login
-                    return Challenge();
-                }
-
+                // Asignar usuario automáticamente
+                restaurante.UsuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 _context.Add(restaurante);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -83,6 +86,7 @@ namespace MesaListo.Controllers
         }
 
         // GET: Restaurantes/Edit/5
+        [Authorize(Roles = "Admin,Restaurante")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -95,19 +99,38 @@ namespace MesaListo.Controllers
             {
                 return NotFound();
             }
+
+            // Verificar permisos: Restaurante solo puede editar SUS restaurantes
+            if (User.IsInRole("Restaurante") && restaurante.UsuarioId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
+                return Forbid();
+            }
+
             return View(restaurante);
         }
 
         // POST: Restaurantes/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Restaurante")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Direccion,Telefono,UsuarioId")] Restaurante restaurante)
         {
             if (id != restaurante.Id)
             {
                 return NotFound();
+            }
+
+            // Verificar permisos: Restaurante solo puede editar SUS restaurantes
+            if (User.IsInRole("Restaurante"))
+            {
+                var existingRestaurante = await _context.Restaurantes
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(r => r.Id == id);
+
+                if (existingRestaurante == null || existingRestaurante.UsuarioId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+                {
+                    return Forbid();
+                }
             }
 
             if (ModelState.IsValid)
@@ -134,6 +157,7 @@ namespace MesaListo.Controllers
         }
 
         // GET: Restaurantes/Delete/5
+        [Authorize(Roles = "Admin")] // SOLO Admin puede eliminar restaurantes
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -154,6 +178,7 @@ namespace MesaListo.Controllers
         // POST: Restaurantes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")] // SOLO Admin puede eliminar restaurantes
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var restaurante = await _context.Restaurantes.FindAsync(id);

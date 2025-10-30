@@ -12,7 +12,7 @@ using System.Security.Claims;
 
 namespace MesaListo.Controllers
 {
-    [Authorize] // Requerir autenticación
+    [Authorize]
     public class ReservasController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,6 +22,7 @@ namespace MesaListo.Controllers
             _context = context;
         }
 
+        // GET: Reservas
         // GET: Reservas
         public async Task<IActionResult> Index()
         {
@@ -34,14 +35,17 @@ namespace MesaListo.Controllers
             // Filtros por rol
             if (User.IsInRole("Cliente"))
             {
+                // Clientes solo ven SUS reservas
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 query = query.Where(r => r.ClienteId == userId);
             }
             else if (User.IsInRole("Restaurante"))
             {
+                // Restaurantes ven reservas de SUS mesas
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 query = query.Where(r => r.Mesa.Restaurante.UsuarioId == userId);
             }
+            // Admin ve TODAS las reservas (sin filtro adicional)
 
             return View(await query.ToListAsync());
         }
@@ -75,36 +79,34 @@ namespace MesaListo.Controllers
         }
 
         // GET: Reservas/Create
-        // GET: Reservas/Create
+        [Authorize(Roles = "Cliente")] // SOLO clientes pueden crear reservas
         public IActionResult Create()
         {
-            var mesasQuery = _context.Mesas.Include(m => m.Restaurante).AsQueryable();
-
-            // Filtros por rol
-            if (User.IsInRole("Restaurante"))
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                mesasQuery = mesasQuery.Where(m => m.Restaurante.UsuarioId == userId);
-            }
+            // Clientes pueden ver todas las mesas disponibles
+            var mesasQuery = _context.Mesas
+                .Include(m => m.Restaurante)
+                .Where(m => m.Restaurante != null) // Solo mesas con restaurante
+                .AsQueryable();
 
             ViewData["MesaId"] = new SelectList(mesasQuery, "Id", "DisplayInfo");
-
-            // NO cargar ViewData["ClienteId"] - se asigna automáticamente
             return View();
         }
 
         // POST: Reservas/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Reserva reserva) // Quitar [Bind]
+        [Authorize(Roles = "Cliente")] // SOLO clientes pueden crear reservas
+        public async Task<IActionResult> Create(Reserva reserva)
         {
-            Console.WriteLine($"=== DEBUG CREATE RESERVA ===");
+            // SOLO Clientes pueden crear reservas - validación adicional
+            if (!User.IsInRole("Cliente"))
+            {
+                return Forbid();
+            }
 
             // Remover errores de ClienteId ya que lo asignaremos automáticamente
             ModelState.Remove("ClienteId");
-            ModelState.Remove("Cliente"); // También remover la propiedad de navegación
-
-            Console.WriteLine($"ModelState.IsValid después de remover ClienteId: {ModelState.IsValid}");
+            ModelState.Remove("Cliente");
 
             // Convertir FechaHora a UTC si es necesario
             if (reserva.FechaHora.Kind == DateTimeKind.Unspecified)
@@ -122,52 +124,34 @@ namespace MesaListo.Controllers
             {
                 // Asignar cliente automáticamente
                 reserva.ClienteId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                Console.WriteLine($"ClienteId asignado: {reserva.ClienteId}");
 
-                // Estado inicial
-                if (string.IsNullOrEmpty(reserva.Estado))
-                {
-                    reserva.Estado = "Pendiente";
-                }
+                // Estado inicial siempre "Pendiente" para nuevas reservas de clientes
+                reserva.Estado = "Pendiente";
 
                 try
                 {
                     _context.Add(reserva);
                     await _context.SaveChangesAsync();
-                    Console.WriteLine("✅ Reserva guardada exitosamente");
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"❌ Error al guardar: {ex.Message}");
                     ModelState.AddModelError("", "Error al guardar la reserva: " + ex.Message);
-                }
-            }
-            else
-            {
-                // Mostrar errores restantes
-                foreach (var key in ModelState.Keys)
-                {
-                    var state = ModelState[key];
-                    foreach (var error in state.Errors)
-                    {
-                        Console.WriteLine($"Error restante en {key}: {error.ErrorMessage}");
-                    }
                 }
             }
 
             // Recargar ViewData si hay error
-            var mesasQuery = _context.Mesas.Include(m => m.Restaurante).AsQueryable();
-            if (User.IsInRole("Restaurante"))
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                mesasQuery = mesasQuery.Where(m => m.Restaurante.UsuarioId == userId);
-            }
+            var mesasQuery = _context.Mesas
+                .Include(m => m.Restaurante)
+                .Where(m => m.Restaurante != null)
+                .AsQueryable();
+
             ViewData["MesaId"] = new SelectList(mesasQuery, "Id", "DisplayInfo", reserva.MesaId);
             return View(reserva);
         }
 
         // GET: Reservas/Edit/5
+        [Authorize(Roles = "Admin,Restaurante")] // Clientes NO pueden editar reservas
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -175,7 +159,10 @@ namespace MesaListo.Controllers
                 return NotFound();
             }
 
-            var reserva = await _context.Reservas.FindAsync(id);
+            var reserva = await _context.Reservas
+                .Include(r => r.Mesa)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
             if (reserva == null)
             {
                 return NotFound();
@@ -187,7 +174,15 @@ namespace MesaListo.Controllers
                 return Forbid();
             }
 
-            ViewData["MesaId"] = new SelectList(_context.Mesas, "Id", "Codigo", reserva.MesaId);
+            // Restaurantes solo pueden editar reservas de SUS mesas
+            var mesasQuery = _context.Mesas.AsQueryable();
+            if (User.IsInRole("Restaurante"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                mesasQuery = mesasQuery.Where(m => m.Restaurante.UsuarioId == userId);
+            }
+
+            ViewData["MesaId"] = new SelectList(mesasQuery, "Id", "Codigo", reserva.MesaId);
 
             // Lista de estados para dropdown
             ViewData["Estados"] = new SelectList(new[]
@@ -204,6 +199,7 @@ namespace MesaListo.Controllers
         // POST: Reservas/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Restaurante")] // Clientes NO pueden editar reservas
         public async Task<IActionResult> Edit(int id, [Bind("Id,FechaHora,MesaId,ClienteId,Estado")] Reserva reserva)
         {
             if (id != reserva.Id)
@@ -212,7 +208,11 @@ namespace MesaListo.Controllers
             }
 
             // Verificar permisos
-            var existingReserva = await _context.Reservas.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+            var existingReserva = await _context.Reservas
+                .AsNoTracking()
+                .Include(r => r.Mesa)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
             if (existingReserva == null || !CanAccessReserva(existingReserva))
             {
                 return Forbid();
@@ -245,7 +245,15 @@ namespace MesaListo.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["MesaId"] = new SelectList(_context.Mesas, "Id", "Codigo", reserva.MesaId);
+            // Recargar ViewData si hay error
+            var mesasQuery = _context.Mesas.AsQueryable();
+            if (User.IsInRole("Restaurante"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                mesasQuery = mesasQuery.Where(m => m.Restaurante.UsuarioId == userId);
+            }
+
+            ViewData["MesaId"] = new SelectList(mesasQuery, "Id", "Codigo", reserva.MesaId);
             ViewData["Estados"] = new SelectList(new[]
             {
                 new { Value = "Pendiente", Text = "Pendiente" },
@@ -258,6 +266,7 @@ namespace MesaListo.Controllers
         }
 
         // GET: Reservas/Delete/5
+        [Authorize(Roles = "Admin,Restaurante")] // Clientes NO pueden eliminar reservas
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -270,6 +279,7 @@ namespace MesaListo.Controllers
                 .Include(r => r.Mesa)
                     .ThenInclude(m => m.Restaurante)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (reserva == null)
             {
                 return NotFound();
@@ -287,9 +297,13 @@ namespace MesaListo.Controllers
         // POST: Reservas/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Restaurante")] // Clientes NO pueden eliminar reservas
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var reserva = await _context.Reservas.FindAsync(id);
+            var reserva = await _context.Reservas
+                .Include(r => r.Mesa)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
             if (reserva != null)
             {
                 // Verificar permisos
@@ -299,14 +313,13 @@ namespace MesaListo.Controllers
                 }
 
                 _context.Reservas.Remove(reserva);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         // Método helper para validar disponibilidad
-        // Método helper para validar disponibilidad - CORREGIDO
         private async Task<bool> IsMesaAvailable(int mesaId, DateTime fechaHora, int? excludeReservaId = null)
         {
             // Convertir a UTC para PostgreSQL
@@ -333,15 +346,12 @@ namespace MesaListo.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (User.IsInRole("Admin")) return true;
+
             if (User.IsInRole("Cliente") && reserva.ClienteId == userId) return true;
+
             if (User.IsInRole("Restaurante"))
             {
-                var restauranteUserId = _context.Mesas
-                    .Include(m => m.Restaurante)
-                    .Where(m => m.Id == reserva.MesaId)
-                    .Select(m => m.Restaurante.UsuarioId)
-                    .FirstOrDefault();
-                return restauranteUserId == userId;
+                return reserva.Mesa?.Restaurante?.UsuarioId == userId;
             }
 
             return false;

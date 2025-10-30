@@ -1,44 +1,61 @@
 ﻿@model MesaListo.Models.Mesa
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Crear Mesa";
+    var currentUserId = UserManager.GetUserId(User);
 }
 
-<h1>Create</h1>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Crear Nueva Mesa</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-<h4>Mesa</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="All" class="text-danger"></div> <!-- Cambiar a "All" -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Codigo" class="form-label fw-bold">Código de Mesa</label>
+                                    <input asp-for="Codigo" class="form-control" placeholder="Ej: M01, M02..." />
+                                    <span asp-validation-for="Codigo" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Capacidad" class="form-label fw-bold">Capacidad</label>
+                                    <input asp-for="Capacidad" class="form-control" type="number" min="1" max="20" placeholder="Número de personas" />
+                                    <span asp-validation-for="Capacidad" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="form-group">
-                <label asp-for="Codigo" class="control-label"></label>
-                <input asp-for="Codigo" class="form-control" />
-                <span asp-validation-for="Codigo" class="text-danger"></span>
+                        <div class="form-group mb-4">
+                            <label asp-for="RestauranteId" class="form-label fw-bold">Restaurante</label>
+                            <select asp-for="RestauranteId" class="form-control" asp-items="ViewBag.RestauranteId">
+                                <option value="">-- Seleccionar Restaurante --</option>
+                            </select>
+                            <span asp-validation-for="RestauranteId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Listado
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save me-2"></i>Crear Mesa
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Capacidad" class="control-label"></label>
-                <input asp-for="Capacidad" class="form-control" />
-                <span asp-validation-for="Capacidad" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="RestauranteId" class="control-label"></label>
-                <select asp-for="RestauranteId" class="form-control" asp-items="ViewBag.RestauranteId">
-                    <option value="">-- Seleccionar Restaurante --</option>
-                </select>
-                <span asp-validation-for="RestauranteId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

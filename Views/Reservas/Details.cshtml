@@ -1,42 +1,141 @@
 ﻿@model MesaListo.Models.Reserva
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles de Reserva";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Reserva #@Model.Id</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-warning text-white">
+                                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información de la Reserva</h6>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-5">Estado:</dt>
+                                        <dd class="col-sm-7">
+                                            <span class="badge @GetEstadoBadgeClass(Model.Estado) fs-6">@Model.Estado</span>
+                                        </dd>
 
-<div>
-    <h4>Reserva</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaHora)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FechaHora)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Estado)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Estado)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Mesa)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Mesa.Codigo)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Cliente)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Cliente.Id)
-        </dd>
-    </dl>
+                                        <dt class="col-sm-5">Fecha y Hora:</dt>
+                                        <dd class="col-sm-7">
+                                            <i class="fas fa-calendar me-1 text-muted"></i>
+                                            @Model.FechaHora.ToString("dd/MM/yyyy")
+                                            <br>
+                                            <i class="fas fa-clock me-1 text-muted"></i>
+                                            @Model.FechaHora.ToString("HH:mm") hrs
+                                        </dd>
+
+                                        <dt class="col-sm-5">Cliente:</dt>
+                                        <dd class="col-sm-7">
+                                            <i class="fas fa-user me-1 text-muted"></i>
+                                            @Model.Cliente?.Email
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0"><i class="fas fa-utensils me-2"></i>Información del Restaurante</h6>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Restaurante:</dt>
+                                        <dd class="col-sm-8 fw-bold text-warning">@Model.Mesa?.Restaurante?.Nombre</dd>
+
+                                        <dt class="col-sm-4">Mesa:</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge bg-info">@Model.Mesa?.Codigo</span>
+                                            <small class="text-muted">(Capacidad: @Model.Mesa?.Capacidad personas)</small>
+                                        </dd>
+
+                                        <dt class="col-sm-4">Dirección:</dt>
+                                        <dd class="col-sm-8">
+                                            <i class="fas fa-map-marker-alt me-1 text-danger"></i>
+                                            @Model.Mesa?.Restaurante?.Direccion
+                                        </dd>
+
+                                        <dt class="col-sm-4">Teléfono:</dt>
+                                        <dd class="col-sm-8">
+                                            <i class="fas fa-phone me-1 text-success"></i>
+                                            @Model.Mesa?.Restaurante?.Telefono
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional según el estado -->
+                    @if (Model.Estado == "Pendiente")
+                    {
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="fas fa-clock me-2"></i>Reserva Pendiente</h6>
+                            <p class="mb-0">Su reserva está esperando confirmación por parte del restaurante.</p>
+                        </div>
+                    }
+                    else if (Model.Estado == "Confirmada")
+                    {
+                        <div class="alert alert-success">
+                            <h6 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Reserva Confirmada</h6>
+                            <p class="mb-0">¡Su reserva ha sido confirmada! Esperamos su visita.</p>
+                        </div>
+                    }
+                    else if (Model.Estado == "Cancelada")
+                    {
+                        <div class="alert alert-danger">
+                            <h6 class="alert-heading"><i class="fas fa-times-circle me-2"></i>Reserva Cancelada</h6>
+                            <p class="mb-0">Esta reserva ha sido cancelada.</p>
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver al Listado
+                        </a>
+
+                        <div>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Restaurante"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">
+                                    <i class="fas fa-edit me-2"></i>Editar Reserva
+                                </a>
+                            }
+                            @if (User.IsInRole("Admin") || User.IsInRole("Restaurante"))
+                            {
+                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash me-2"></i>Eliminar
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+@functions {
+    public string GetEstadoBadgeClass(string estado)
+    {
+        return estado switch
+        {
+            "Pendiente" => "bg-warning",
+            "Confirmada" => "bg-success",
+            "Cancelada" => "bg-danger",
+            "Completada" => "bg-info",
+            _ => "bg-secondary"
+        };
+    }
+}
