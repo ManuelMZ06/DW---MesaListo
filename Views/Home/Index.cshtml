@@ -1,40 +1,40 @@
-﻿@model List<MesaListo.Models.Restaurante>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
 
-@{
-    ViewData["Title"] = "Inicio - MesaListo";
-}
+<div class="container mt-5">
+    <div class="row align-items-center">
+        <!-- Sección de texto -->
+        <div class="col-md-6 mb-4">
+            <h1 class="display-4 fw-bold" style="color: #ff7a00;">¡Bienvenido a MesaListo!</h1>
+            <p class="lead text-muted mt-4">
+                MesaListo es una plataforma diseñada para facilitar la <strong>reserva de mesas en restaurantes</strong>.
+                Los clientes pueden explorar opciones, hacer reservas en segundos y dejar reseñas de su experiencia.
+                Los restaurantes, por su parte, pueden gestionar sus mesas, visualizar reservas en tiempo real y acceder a un panel personalizado.
+            </p>
 
-<div class="text-center mb-5">
-    <h1 class="display-4 text-primary">Bienvenido a MesaListo</h1>
-    <p class="lead">Reserva tu mesa favorita de manera fácil y rápida</p>
-</div>
-
-<div class="row">
-    @foreach (var restaurante in Model)
-    {
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title text-primary">@restaurante.Nombre</h5>
-                    <p class="card-text">
-                        <i class="fas fa-map-marker-alt text-danger"></i> @restaurante.Direccion<br>
-                        <i class="fas fa-phone text-success"></i> @restaurante.Telefono
-                    </p>
-                </div>
-                <div class="card-footer bg-transparent">
-                    <a href="#" class="btn btn-primary btn-sm">
-                        <i class="fas fa-calendar-plus"></i> Reservar Mesa
+            @if (!SignInManager.IsSignedIn(User))
+            {
+                <div class="mt-4 d-flex gap-3">
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn text-white px-4 py-2" style="background-color: #ff7a00;">
+                        <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+                    </a>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-warning px-4 py-2">
+                        <i class="fas fa-user-plus"></i> Registrarse
                     </a>
                 </div>
-            </div>
+            }
+            else
+            {
+                <div class="alert alert-success mt-4">
+                    <h4 class="mb-0">¡Hola, @User.Identity.Name!</h4>
+                    <p class="mt-2 mb-0">Ya puedes acceder a tus funciones según tu rol.</p>
+                </div>
+            }
         </div>
-    }
-</div>
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info text-center">
-        <h4>No hay restaurantes disponibles</h4>
-        <p>Próximamente tendremos más opciones para ti.</p>
+        <!-- Sección de imagen -->
+        <div class="col-md-6 text-center">
+            <img src="~/mesa-listo-banner.jpg" alt="MesaListo ilustración" class="img-fluid rounded shadow" style="max-height: 400px; object-fit: cover;">
+        </div>
     </div>
-}
+</div>

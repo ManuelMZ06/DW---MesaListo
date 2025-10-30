@@ -20,3 +20,45 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+:root {
+    --bs-primary: #ff7a00;
+}
+
+.bg-primary {
+    background-color: var(--bs-primary) !important;
+}
+
+.text-primary {
+    color: var(--bs-primary) !important;
+}
+
+.btn-primary {
+    background-color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+}
+
+    .btn-primary:hover {
+        background-color: #e66b00 !important;
+        border-color: #e66b00 !important;
+    }
+
+.btn-login-orange {
+    background-color: #ff7a00;
+    color: white !important;
+    border: none;
+}
+
+    .btn-login-orange:hover {
+        background-color: #e66b00;
+    }
+
+.btn-outline-naranja {
+    color: #ff7a00 !important;
+    border-color: #ff7a00 !important;
+}
+
+    .btn-outline-naranja:hover {
+        background-color: #ff7a00 !important;
+        color: white !important;
+    }
