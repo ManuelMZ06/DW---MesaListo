@@ -4,53 +4,60 @@
     ViewData["Title"] = "Crear Reseña";
 }
 
-<h1>Crear Reseña</h1>
+<h1 class="mb-4">
+    <i class="fas fa-star text-warning me-2"></i> Crear Reseña
+</h1>
 
-<h4>Reseña</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="card shadow p-4">
+    <form asp-action="Create">
+        <div class="mb-3">
+            <label asp-for="ReservaId" class="form-label">Reserva</label>
+            <select asp-for="ReservaId" asp-items="ViewBag.ReservaId" class="form-select"></select>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="Puntuacion" class="control-label"></label>
-                <select asp-for="Puntuacion" class="form-control">
-                    <option value="1">⭐ (1) - Muy Malo</option>
-                    <option value="2">⭐⭐ (2) - Malo</option>
-                    <option value="3">⭐⭐⭐ (3) - Regular</option>
-                    <option value="4">⭐⭐⭐⭐ (4) - Bueno</option>
-                    <option value="5">⭐⭐⭐⭐⭐ (5) - Excelente</option>
-                </select>
-                <span asp-validation-for="Puntuacion" class="text-danger"></span>
+        <div class="mb-3">
+            <label class="form-label">Puntuación</label>
+            <div id="starRating" class="mb-2">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <i class="far fa-star fa-2x text-warning star" data-value="@i" style="cursor:pointer;"></i>
+                }
             </div>
+            <input asp-for="Puntuacion" type="hidden" id="Puntuacion" />
+            <span asp-validation-for="Puntuacion" class="text-danger"></span>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="Comentario" class="control-label"></label>
-                <textarea asp-for="Comentario" class="form-control" rows="4"></textarea>
-                <span asp-validation-for="Comentario" class="text-danger"></span>
-            </div>
+        <div class="mb-3">
+            <label asp-for="Comentario" class="form-label">Comentario</label>
+            <textarea asp-for="Comentario" class="form-control" rows="3"></textarea>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="ReservaId" class="control-label">Reserva</label>
-                <select asp-for="ReservaId" class="form-control" asp-items="ViewBag.ReservaId">
-                    <option value="">-- Seleccionar Reserva --</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="ClienteId" class="control-label">Cliente</label>
-                <select asp-for="ClienteId" class="form-control" asp-items="ViewBag.ClienteId">
-                    <option value="">-- Seleccionar Cliente --</option>
-                </select>
-            </div>
-
-            <!-- REMOVER el campo FechaCreacion del formulario -->
-
-            <div class="form-group mt-3">
-                <input type="submit" value="Crear Reseña" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
-            </div>
-        </form>
-    </div>
+        <button type="submit" class="btn btn-warning">
+            <i class="fas fa-save me-2"></i>Guardar
+        </button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </form>
 </div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function () {
+                const value = this.getAttribute('data-value');
+                document.getElementById('Puntuacion').value = value;
+
+                document.querySelectorAll('.star').forEach(s => {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                });
+
+                for (let i = 1; i <= value; i++) {
+                    document.querySelector(`.star[data-value="${i}"]`).classList.remove('far');
+                    document.querySelector(`.star[data-value="${i}"]`).classList.add('fas');
+                }
+            });
+        });
+    </script>
+}
