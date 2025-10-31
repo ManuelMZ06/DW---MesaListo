@@ -1,6 +1,7 @@
 using MesaListo.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using MesaListo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,6 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
-// ... resto del c�digo
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -33,7 +33,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddScoped<EmailService>();
+
 builder.Services.AddControllersWithViews();
+
 
 var app = builder.Build();
 
@@ -75,5 +78,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred seeding the DB.");
     }
 }
+
+
 
 app.Run();
