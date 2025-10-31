@@ -1,51 +1,56 @@
 ﻿@model MesaListo.Models.Resena
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Crear Reseña";
 }
 
-<h1>Create</h1>
+<h1>Crear Reseña</h1>
 
-<h4>Resena</h4>
+<h4>Reseña</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <div class="form-group">
                 <label asp-for="Puntuacion" class="control-label"></label>
-                <input asp-for="Puntuacion" class="form-control" />
+                <select asp-for="Puntuacion" class="form-control">
+                    <option value="1">⭐ (1) - Muy Malo</option>
+                    <option value="2">⭐⭐ (2) - Malo</option>
+                    <option value="3">⭐⭐⭐ (3) - Regular</option>
+                    <option value="4">⭐⭐⭐⭐ (4) - Bueno</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5) - Excelente</option>
+                </select>
                 <span asp-validation-for="Puntuacion" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="Comentario" class="control-label"></label>
-                <input asp-for="Comentario" class="form-control" />
+                <textarea asp-for="Comentario" class="form-control" rows="4"></textarea>
                 <span asp-validation-for="Comentario" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <label asp-for="ReservaId" class="control-label"></label>
-                <select asp-for="ReservaId" class ="form-control" asp-items="ViewBag.ReservaId"></select>
+                <label asp-for="ReservaId" class="control-label">Reserva</label>
+                <select asp-for="ReservaId" class="form-control" asp-items="ViewBag.ReservaId">
+                    <option value="">-- Seleccionar Reserva --</option>
+                </select>
             </div>
+
             <div class="form-group">
-                <label asp-for="ClienteId" class="control-label"></label>
-                <select asp-for="ClienteId" class ="form-control" asp-items="ViewBag.ClienteId"></select>
+                <label asp-for="ClienteId" class="control-label">Cliente</label>
+                <select asp-for="ClienteId" class="form-control" asp-items="ViewBag.ClienteId">
+                    <option value="">-- Seleccionar Cliente --</option>
+                </select>
             </div>
-            <div class="form-group">
-                <label asp-for="FechaCreacion" class="control-label"></label>
-                <input asp-for="FechaCreacion" class="form-control" />
-                <span asp-validation-for="FechaCreacion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+
+            <!-- REMOVER el campo FechaCreacion del formulario -->
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Crear Reseña" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
             </div>
         </form>
     </div>
 </div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

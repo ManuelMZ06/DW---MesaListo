@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MesaListo.Models;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MesaListo.Data
 {
@@ -23,15 +24,23 @@ namespace MesaListo.Data
             // Configurar el esquema por defecto
             builder.HasDefaultSchema("public");
 
-            // Configurar DateTime para PostgreSQL
-            builder.Entity<Reserva>()
-                .Property(r => r.FechaHora)
-                .HasConversion(
-                    v => v.ToUniversalTime(), // Convertir a UTC al guardar
-                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc) // Especificar como UTC al leer
-                );
+            // Configurar DateTime para PostgreSQL - SOLUCIÓN COMPLETA
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(
+                            new ValueConverter<DateTime, DateTime>(
+                                v => v.ToUniversalTime(),
+                                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+                            ));
+                    }
+                }
+            }
 
-            // Configuraciones adicionales
+            // Configuraciones específicas
             builder.Entity<Reserva>()
                 .HasIndex(r => new { r.MesaId, r.FechaHora })
                 .IsUnique();
