@@ -1,54 +1,65 @@
 ﻿@model MesaListo.Models.Resena
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Reseña";
 }
 
-<h1>Edit</h1>
+<h1 class="mb-4">
+    <i class="fas fa-edit text-warning me-2"></i> Editar Reseña
+</h1>
 
-<h4>Resena</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Puntuacion" class="control-label"></label>
-                <input asp-for="Puntuacion" class="form-control" />
-                <span asp-validation-for="Puntuacion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Comentario" class="control-label"></label>
-                <input asp-for="Comentario" class="form-control" />
-                <span asp-validation-for="Comentario" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ReservaId" class="control-label"></label>
-                <select asp-for="ReservaId" class="form-control" asp-items="ViewBag.ReservaId"></select>
-                <span asp-validation-for="ReservaId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ClienteId" class="control-label"></label>
-                <select asp-for="ClienteId" class="form-control" asp-items="ViewBag.ClienteId"></select>
-                <span asp-validation-for="ClienteId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FechaCreacion" class="control-label"></label>
-                <input asp-for="FechaCreacion" class="form-control" />
-                <span asp-validation-for="FechaCreacion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+<div class="card shadow p-4">
+    <form asp-action="Edit">
+        <input type="hidden" asp-for="Id" />
 
-<div>
-    <a asp-action="Index">Back to List</a>
+        <div class="mb-3">
+            <label class="form-label">Puntuación</label>
+            <div id="starRating" class="mb-2">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    var starClass = i <= Model.Puntuacion ? "fas" : "far";
+                    <i class="@starClass fa-star fa-2x text-warning star" data-value="@i" style="cursor:pointer;"></i>
+                }
+            </div>
+            <input asp-for="Puntuacion" type="hidden" id="Puntuacion" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Comentario" class="form-label">Comentario</label>
+            <textarea asp-for="Comentario" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Fecha de creación</label>
+            <input class="form-control" value="@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")" readonly />
+        </div>
+
+        <button type="submit" class="btn btn-warning">
+            <i class="fas fa-save me-2"></i>Guardar cambios
+        </button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </form>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function () {
+                const value = this.getAttribute('data-value');
+                document.getElementById('Puntuacion').value = value;
+
+                document.querySelectorAll('.star').forEach(s => {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                });
+
+                for (let i = 1; i <= value; i++) {
+                    document.querySelector(`.star[data-value="${i}"]`).classList.remove('far');
+                    document.querySelector(`.star[data-value="${i}"]`).classList.add('fas');
+                }
+            });
+        });
+    </script>
 }

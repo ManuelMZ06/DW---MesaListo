@@ -1,48 +1,35 @@
 ﻿@model MesaListo.Models.Resena
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles de Reseña";
 }
 
-<h1>Details</h1>
+<h1 class="mb-4">
+    <i class="fas fa-info-circle text-warning me-2"></i> Detalles de Reseña
+</h1>
 
-<div>
-    <h4>Resena</h4>
-    <hr />
+<div class="card shadow p-4">
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Puntuacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Puntuacion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Comentario)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Comentario)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaCreacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FechaCreacion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Reserva)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Reserva.ClienteId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Cliente)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Cliente.Id)
-        </dd>
+        <dt class="col-sm-3">Reserva</dt>
+        <dd class="col-sm-9">@Model.Reserva?.Mesa?.Restaurante?.Nombre</dd>
+
+        <dt class="col-sm-3">Puntuación</dt>
+        <dd class="col-sm-9">@Model.Puntuacion ⭐</dd>
+
+        <dt class="col-sm-3">Comentario</dt>
+        <dd class="col-sm-9">@Model.Comentario</dd>
+
+        <dt class="col-sm-3">Cliente</dt>
+        <dd class="col-sm-9">@Model.Cliente?.Email</dd>
+
+        <dt class="col-sm-3">Fecha</dt>
+        <dd class="col-sm-9">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
     </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">
+        <i class="fas fa-edit me-2"></i>Editar
+    </a>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Volver
+    </a>
 </div>
