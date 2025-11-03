@@ -63,6 +63,30 @@ namespace MesaListo.Controllers
             return View();
         }
 
+        // GET: Reservas/Details/5
+        [Authorize]
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var reserva = await _context.Reservas
+                .Include(r => r.Mesa)
+                    .ThenInclude(m => m.Restaurante)
+                .Include(r => r.Cliente)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (reserva == null)
+            {
+                return NotFound();
+            }
+
+            return View(reserva);
+        }
+
+
         // POST: Reservas/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -77,6 +101,13 @@ namespace MesaListo.Controllers
                 reserva.FechaHora = DateTime.SpecifyKind(reserva.FechaHora, DateTimeKind.Utc);
             }
 
+            // 🔹 Validación 1: No permitir fechas pasadas
+            if (reserva.FechaHora < DateTime.Now)
+            {
+                ModelState.AddModelError("FechaHora", "No puedes crear una reserva para una fecha u hora pasada.");
+            }
+
+            // 🔹 Validación 2: Evitar reservas duplicadas
             if (!await IsMesaAvailable(reserva.MesaId, reserva.FechaHora))
             {
                 ModelState.AddModelError("FechaHora", "La mesa no está disponible en este horario.");
@@ -133,7 +164,6 @@ namespace MesaListo.Controllers
             return View(reserva);
         }
 
-
         // GET: Reservas/Edit/5
         [Authorize(Roles = "Admin,Restaurante")]
         public async Task<IActionResult> Edit(int? id)
@@ -161,8 +191,8 @@ namespace MesaListo.Controllers
 
             ViewData["Estados"] = new SelectList(new[]
             {
-        "Pendiente", "Confirmada", "Cancelada", "Completada"
-    }, reserva.Estado);
+                "Pendiente", "Confirmada", "Cancelada", "Completada"
+            }, reserva.Estado);
 
             return View(reserva);
         }
@@ -223,7 +253,6 @@ namespace MesaListo.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
 
         // GET: Reservas/Delete/5
         [Authorize(Roles = "Admin,Restaurante")]
